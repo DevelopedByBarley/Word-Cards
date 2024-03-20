@@ -32,8 +32,6 @@ fetchAuthentication.interceptors.response.use(
 
     // Hiba esetén 403-as válaszkóddal újra kért kérés ellenőrzése
     if (error.response.status !== 403) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
       return Promise.reject(error);
     }
 
@@ -56,6 +54,11 @@ fetchAuthentication.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.setItem('accessToken', accessToken);
       })
-      .then(() => fetchAuthentication(originalRequest));
+      .then(() => fetchAuthentication(originalRequest))
+      .catch(err => {
+        console.log(err);
+        localStorage.clear();
+        window.location.href = "/user";
+      })
   }
 );

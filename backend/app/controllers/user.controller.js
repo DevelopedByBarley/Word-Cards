@@ -88,12 +88,12 @@ const index = async (req, res) => {
 
   setCardsForRepeat(user._id);
 
-  if (!await checkCapacity(user)) {
+/*   if (!await checkCapacity(user)) {
     return res.status(500).json({
       status: false,
       message: "You earned your capacity!",
     })
-  }
+  } */
   if (!user) {
     return res.status(404).json({
       status: false,

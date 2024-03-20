@@ -34,7 +34,7 @@ const store = async (req, res) => {
     const newCard = new Card({
       word: word.toLowerCase(),
       translate: translate.toLowerCase(),
-      sentence: replaceWordInSentence(word.toLowerCase(), sentence.toLowerCase()),
+      sentence: replaceWordInSentence(translate.toLowerCase(), sentence.toLowerCase()),
       expires: Date.now() + (24 * 60 * 60 * 1000), // Az aktuális időpont + 1 nap
       user: req.user._id,
       theme: theme,
@@ -56,7 +56,7 @@ const store = async (req, res) => {
     return res.status(200).json({
       status: true,
       message: "Card created successfully!",
-      data: savedCard
+      card: savedCard
     });
   } catch (error) {
     console.error(error);
@@ -72,11 +72,10 @@ const update = async (req, res) => {
   const { word, translate, sentence, lang, cardId, themeId } = req.body;
   try {
 
-
     const newCard = await Card.findByIdAndUpdate({ _id: cardId }, {
       word: word.toLowerCase(),
       translate: translate.toLowerCase(),
-      sentence: replaceWordInSentence(word.toLowerCase(), sentence.toLowerCase()),
+      sentence: replaceWordInSentence(translate.toLowerCase(), sentence.toLowerCase()),
       theme: themeId,
       lang: lang,
     });
@@ -96,31 +95,49 @@ const update = async (req, res) => {
 }
 
 const destroy = async (req, res) => {
-  const { cardId, themeId } = req.body
-
   try {
-    await Card.deleteOne({
-      _id: cardId
-    })
 
-    await Theme.findOneAndUpdate(
-      { _id: themeId },
-      { $pull: { cards: cardId } }
-    );
+    const { cardId } = req.params;
 
-    res.status(200).json({
-      status: true,
-      message: "Card deleted successfully!",
-      data: cardId
-    })
+    // Keresd meg a Theme-et, amelynek a cards tömbje tartalmazza a kártyát
+    const theme = await Theme.findOne({ cards: cardId });
+
+
+    // Ellenőrizd, hogy találtál-e megfelelő Theme-et
+    if (theme) {
+      // Töröld a kártyát
+      await Card.deleteOne({ _id: cardId });
+
+      // Frissítsd a Theme-et, hogy eltávolítsd belőle a kártyát
+      await Theme.findOneAndUpdate(
+        { _id: theme._id },
+        { $pull: { cards: cardId } }
+      );
+
+      // Küldj választ a kliensnek, hogy sikeres volt-e a törlés
+      res.status(200).json({
+        status: true,
+        message: "Card deleted successfully!",
+        cardId: cardId
+      });
+    } else {
+      // Ha nem találtál megfelelő Theme-et, küldj hibát a kliensnek
+      res.status(404).json({
+        status: false,
+        message: "Theme not found for the given cardId"
+      });
+    }
   } catch (error) {
-    console.error(error);
+    // Hibakezelés
+    console.error("Card deleting error:", error);
     res.status(500).json({
       status: false,
-      message: "Card deleting error!",
-    })
+      message: "Card deleting error!"
+    });
   }
-}
+};
+
+
 
 const compare = async (req, res) => {
   const { translate, cardId } = req.body;
@@ -129,6 +146,10 @@ const compare = async (req, res) => {
   })
 
   if (translate.toLowerCase() !== card.translate) {
+    await Card.findOneAndUpdate({_id: cardId}, {
+      expires: expires(1, new Date(Date.now())),
+      repeat: false
+    })
     return res.status(500).json({
       status: false,
       message: "Card compare error!",
@@ -158,9 +179,11 @@ const compare = async (req, res) => {
   })
 }
 
-function replaceWordInSentence(word, sentence) {
-  var replacement = "_".repeat(word.length);
-  return sentence.replace(word, replacement);
+function replaceWordInSentence(translate, sentence) {
+  var replacement = "_".repeat(translate.length);
+
+
+  return sentence.replace(translate, replacement);
 }
 
 

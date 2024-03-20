@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { Button } from 'react-bootstrap';
 import { fetchAuthentication } from '../services/AuthService';
+import { UserContext } from '../App';
 
 export default function Navigation() {
-  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-    setUser(userData);
-  }, []);
+  const {user} = useContext(UserContext);
 
   const logout = () => {
     fetchAuthentication.post('/user/logout')
@@ -37,6 +34,8 @@ export default function Navigation() {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
+              <Nav.Link href="/user/dashboard">Dashboard</Nav.Link>
+              <Nav.Link href="/user">Login</Nav.Link>
               {user ? <Button onClick={logout} variant='danger'>Logout</Button> : null}
             </Nav>
           </Navbar.Collapse>

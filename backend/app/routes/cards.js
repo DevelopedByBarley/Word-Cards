@@ -6,6 +6,6 @@ const authenticateToken = require('../middlewares/authenticateToken');
 router.get('/', authenticateToken, index);
 router.post('/', authenticateToken, store);
 router.post('/compare', authenticateToken, compare);
-router.delete('/', authenticateToken, destroy);
+router.delete('/:cardId', authenticateToken, destroy);
 
 module.exports = router;
