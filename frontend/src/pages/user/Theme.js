@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { UserContext } from "../../App";
-import { Button, ButtonGroup, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { fetchAuthentication } from "../../services/AuthService";
+import Cards from "./Cards";
 
 export default function Theme() {
   const { id } = useParams();
@@ -49,7 +50,6 @@ export default function Theme() {
     }
 
     const finded = user.themes.find(theme => theme._id === id);
-    console.log(finded);
     if (!finded) navigate('/user/dashboard');
     setTheme(finded);
 
@@ -64,38 +64,10 @@ export default function Theme() {
           <Link to={`/user/theme/${theme._id}/cards/new`}>
             <Button variant="outline-dark">Új kártya</Button>
           </Link>
-        </span>): "Elérted a napi limitet"}
-        
+        </span>) : "Elérted a napi limitet"}
+
       </h1>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Szó</th>
-            <th>Státusz</th>
-            <th>Lejárat</th>
-            <th>Műveletek</th>
-          </tr>
-        </thead>
-        <tbody>
-
-          {theme.cards?.map((card, index) => (
-            <tr>
-              <td>{index += 1}</td>
-              <td>{card.word}</td>
-              <td>{card.state}</td>
-              <td>{new Date(card.expires).toLocaleDateString()}</td>
-              <td>
-                <ButtonGroup>
-                  <Button className="m-1" variant="warning">Frissít</Button>
-                  <Button className="m-1" variant="danger" onClick={() => deleteCard(card._id)}>Töröl</Button>
-                </ButtonGroup>
-              </td>
-            </tr>
-          ))}
-
-        </tbody>
-      </Table>
+      <Cards theme={theme} deleteCard={deleteCard} />
     </div>
 
   )

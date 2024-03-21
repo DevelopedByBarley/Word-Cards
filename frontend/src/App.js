@@ -10,14 +10,21 @@ import { fetchAuthentication } from './services/AuthService';
 import Loader from './components/Loader';
 import Theme from './pages/user/Theme';
 import StoreCard from './pages/user/StoreCard';
-import RepeatCards from './pages/user/RepeatCards';
+import CompareCard from './pages/user/CompareCard';
+import AlertComponent from './components/AlertComponent';
 
 
 export const UserContext = createContext();
+export const AlertContext = createContext();
 
-function App() {
+export default function App() {
   const [user, setUser] = useState(null);
   const [pending, setPending] = useState(true);
+  const [alert, setAlert] = useState({
+    show: false,
+    variant: '',
+    message: ''
+  });
 
   useLayoutEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -35,24 +42,25 @@ function App() {
   return (
     <>
       {pending ? <Loader /> : (
-        <UserContext.Provider value={{ user, setUser }}>
-          <Navigation />
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="user">
-                <Route path="" element={<Login />} />
-                <Route path="dashboard" element={<Dashboard user={user} />} />
-                <Route path="theme/:id" element={<Theme user={user} />} />
-                <Route path="theme/:themeId/cards/new" element={<StoreCard />} />
-                <Route path="cards" element={<RepeatCards />} />
-              </Route>
-            </Routes>
-          </Router>
-        </UserContext.Provider>
+        <AlertContext.Provider value={{ alert, setAlert }}>
+          <UserContext.Provider value={{ user, setUser }}>
+            {alert.show && <AlertComponent alert={alert} setAlert={setAlert} message={alert.message} variant={alert.variant} />}
+            <Navigation />
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="user">
+                  <Route path="" element={<Login />} />
+                  <Route path="dashboard" element={<Dashboard user={user} />} />
+                  <Route path="theme/:id" element={<Theme user={user} />} />
+                  <Route path="theme/:themeId/cards/new" element={<StoreCard />} />
+                  <Route path="cards" element={<CompareCard />} />
+                </Route>
+              </Routes>
+            </Router>
+          </UserContext.Provider>
+        </AlertContext.Provider>
       )}
     </>
   );
 }
-
-export default App;

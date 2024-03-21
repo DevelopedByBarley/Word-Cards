@@ -3,9 +3,10 @@ import { UserContext } from "../../App";
 import { Link, useNavigate } from "react-router-dom";
 import Themes from "../../components/Themes";
 import { Button } from "react-bootstrap";
+import { getUser } from "../../services/AuthService";
 
 export default function Dashboard() {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [countOfCards, setCountOfCards] = useState(0);
 
@@ -20,15 +21,15 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    getUser(setUser);
     if (!user) {
       navigate('/user'); // Ha a felhasználó nincs bejelentkezve, elnavigál a /user oldalra
       return;
     }
-
     const cardsCount = getCardsOfUser(user); // Kártyaszám kiszámítása
     setCountOfCards(cardsCount); // Kártyaszám állapotának frissítése
 
-  }, [user, navigate]); // Az useEffect futtatása mindig a user vagy a navigate változó változása esetén
+  }, [user, navigate, setUser]); // Az useEffect futtatása mindig a user vagy a navigate változó változása esetén
   return user ? (
     <div>
       {user.cardsForRepeat.length !== 0 ?

@@ -146,37 +146,39 @@ const compare = async (req, res) => {
   })
 
   if (translate.toLowerCase() !== card.translate) {
-    await Card.findOneAndUpdate({_id: cardId}, {
-      expires: expires(1, new Date(Date.now())),
+    await Card.findOneAndUpdate({ _id: cardId }, {
+      expires: new Date(Date.now() + 86400000), // Tomorrow
       repeat: false
-    })
-    return res.status(500).json({
-      status: false,
-      message: "Card compare error!",
-    })
-  }
-
-  if (parseInt(card.state) === 6) {
-    return res.status(500).json({
-      status: false,
-      message: "You learned this card!",
-    })
-  }
-
-  const newState = parseInt(card.state) + 1
-  const expiresDate = expires(newState, card.expires);
-
-  const updated = await Card.findOneAndUpdate({ _id: cardId }, {
-    state: newState,
-    expires: expiresDate,
-    repeat: false,
-  }, { new: true })
-
+    }, { new: true })
   return res.status(500).json({
-    status: true,
-    message: "Card compared successfully!",
-    card: updated
+    status: false,
+    message: "Card compare error!",
   })
+}
+
+if (parseInt(card.state) === 6) {
+  return res.status(500).json({
+    status: false,
+    message: "You learned this card!",
+  })
+}
+
+const newState = parseInt(card.state) + 1
+const expiresDate = expires(newState, card.expires);
+
+const updated = await Card.findOneAndUpdate({ _id: cardId }, {
+  state: newState,
+  expires: expiresDate,
+  repeat: false,
+}, { new: true })
+
+
+
+return res.status(200).json({
+  status: true,
+  message: "Card compared successfully!",
+  card: updated
+})
 }
 
 function replaceWordInSentence(translate, sentence) {

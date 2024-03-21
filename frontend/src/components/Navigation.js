@@ -8,7 +8,7 @@ import { UserContext } from '../App';
 
 export default function Navigation() {
 
-  const {user} = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   const logout = () => {
     fetchAuthentication.post('/user/logout')
@@ -35,7 +35,7 @@ export default function Navigation() {
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
               <Nav.Link href="/user/dashboard">Dashboard</Nav.Link>
-              <Nav.Link href="/user">Login</Nav.Link>
+              {!user && <Nav.Link href="/user">Login</Nav.Link>}
               {user ? <Button onClick={logout} variant='danger'>Logout</Button> : null}
             </Nav>
           </Navbar.Collapse>

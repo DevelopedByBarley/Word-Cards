@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+export function getUser(setUser) {
+  fetchAuthentication.get('/user').then(res => setUser(res.data.user)).catch(err => console.log(err));
+}
 
 // Axios instance létrehozása az authentikációhoz
 export const fetchAuthentication = axios.create();

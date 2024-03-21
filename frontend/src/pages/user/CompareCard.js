@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState } from "react"
-import { UserContext } from "../../App"
+import { AlertContext, UserContext } from "../../App"
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Col, Container, ListGroup, Row, Form } from "react-bootstrap";
 import { fetchAuthentication } from "../../services/AuthService";
 
-export default function RepeatCards() {
-  const { user } = useContext(UserContext);
-  const [cardsForRepeat, setCardsOfRepeat] = useState([]);
+export default function CompareCard() {
   const navigate = useNavigate();
+  const { user } = useContext(UserContext);
+  const { setAlert } = useContext(AlertContext);
+  const [cardsForRepeat, setCardsOfRepeat] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+
 
   useEffect(() => {
     if (!user) {
@@ -23,18 +25,50 @@ export default function RepeatCards() {
       translate: e.target.elements.translate.value,
       cardId: cardsForRepeat[currentCardIndex]._id
     }
-
+  
     fetchAuthentication.post('/cards/compare', card)
-    .then(res => console.log(res.data))
-    .catch(err => {
-      if(err.response.data.status === false) {
-        e.target.elements.translate.value = '';
-        setCurrentCardIndex(prev => prev + 1);
-        alert('A szó nem helyes.');
-
-      }
-    })
+      .then(res => {
+        if (currentCardIndex >= cardsForRepeat.length - 1) {
+          setAlert({
+            show: true,
+            variant: 'success',
+            message: 'Kártya eltalálva!'
+          });
+          navigate('/user/dashboard')
+        } else {
+          setAlert({
+            show: true,
+            variant: 'success',
+            message: 'Kártya eltalálva!'
+          });
+          setCurrentCardIndex(prev => prev + 1);
+          e.target.elements.translate.value = '';
+        }
+      })
+      .catch(err => {
+        if (err.response.data.status === false) {
+          e.target.elements.translate.value = '';
+  
+          if (currentCardIndex >= cardsForRepeat.length - 1) {
+            setAlert({
+              show: true,
+              variant: 'danger',
+              message: 'Kártya sajnos nincs eltalálva, majd legközelebb!'
+            });
+            navigate('/user/dashboard')
+          } else {
+            setAlert({
+              show: true,
+              variant: 'danger',
+              message: 'Kártya sajnos nincs eltalálva, majd legközelebb!'
+            });
+            setCurrentCardIndex(prev => prev + 1);
+          }
+        }
+      })
   }
+  
+
 
 
   useEffect(() => {
@@ -45,6 +79,8 @@ export default function RepeatCards() {
 
     setCardsOfRepeat(user.cardsForRepeat)
   }, [navigate, user]);
+
+
 
   return (
     <Container className="mt-5">
@@ -63,13 +99,12 @@ export default function RepeatCards() {
       <Row>
         <Col style={{ minHeight: "70vh" }} className="d-flex align-items-center justify-content-center">
           <Card style={{ width: '18rem' }}>
-            <Card.Img variant="top" src="holder.js/100px180" />
             <Card.Body>
               <Card.Title>{cardsForRepeat[currentCardIndex]?.sentence}</Card.Title>
               <Card.Text>
                 <Form onSubmit={compare}>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Control type="text" placeholder="Szó beírása" name="translate" required/>
+                    <Form.Control type="text" placeholder="Szó beírása" name="translate" required />
                   </Form.Group>
                   <Button variant="primary" type="submit">
                     Submit

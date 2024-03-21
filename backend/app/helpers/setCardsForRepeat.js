@@ -6,8 +6,12 @@ async function setCardsForRepeat(userId) {
   // Frissítjük azokat a rekordokat, amelyek lejártak
   const expiredRecords = await Card.find({ 
     expires: { $lt: now },
+    state: {$lt: 6},
     user: userId
   });
+
+
+  
 
   expiredRecords.forEach(async (record) => {
     await Card.findOneAndUpdate(
